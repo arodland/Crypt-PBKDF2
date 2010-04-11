@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use Test::More;
 
+# Tests from draft-raeburn-krb-rijndael-krb-04.txt
+
 BEGIN {
   use_ok 'Crypt::PBKDF2';
 }
@@ -43,5 +45,9 @@ is PBKDF2("HMAC-SHA-1", 1200, 256, "pass phrase equals block size", "X" x 64),
 
 is PBKDF2("HMAC-SHA-1", 1200, 256, "pass phrase exceeds block size", "X" x 65),
   "9ccad6d468770cd51b10e6a68721be611a8b4d282601db3b36be9246915ec82a", "raeburn pass phrase exceeds block size, 256-bit";
+
+use Encode ();
+is PBKDF2("HMAC-SHA-1", 50, 256, "EXAMPLE.COMpianist", Encode::encode("UTF-8", "\x{1d11e}") ),
+  "6b9cf26d45455a43a5b8bb276a403b39e7fe37a0c41e02c281ff3069e1e94f52", "raeburn pianist, 256-bit";
 
 done_testing;
