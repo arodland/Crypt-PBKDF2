@@ -1,30 +1,39 @@
 package Crypt::PBKDF2;
 use Moose;
 use MooseX::Method::Signatures;
-
-use Digest::SHA ();
+use Moose::Util::TypeConstraints;
+use namespace::autoclean;
 use MIME::Base64 ();
-use Carp qw(croak cluck);
+use Carp qw(croak);
+use Try::Tiny;
 
-has algorithm => (
-  is => 'rw',
+has hash_class => (
+  is => 'ro',
   isa => 'Str',
-  default => 'HMAC-SHA-1'
+  default => 'HMACSHA1',
 );
 
-method _shasize ($algorithm) {
-  if ($algorithm eq "HMAC-SHA-2") { # Someone might call SHA-256 SHA-2.
-    self->algorithm($algorithm = "HMAC-SHA-256");
-  }
+has hash_args => (
+  is => 'ro',
+  isa => 'HashRef',
+  default => sub { +{} },
+);
 
-  if ($algorithm =~ /^HMAC-SHA-?(\d+)$/) {
-    my $shasize = $1;
+has hasher => (
+  is => 'ro',
+  isa => role_type('Crypt::PBKDF2::Hash'),
+  lazy_build => 1,
+);
 
-    return $shasize if grep $_ == $shasize, (1, 224, 256, 384, 512);
-    croak "What is SHA-$shasize?";
-  } else {
-    croak "Algorithms other than HMAC-SHA-{1, 224, 256, 384, 512} are currently unsupported.";
+method _build_hasher {
+  my $class = $self->hash_class;
+  if ($class !~ s/^\+//) {
+    $class = "Crypt::PBKDF2::Hash::$class";
   }
+  my $hash_args = $self->hash_args;
+
+  Class::MOP::load_class($class);
+  return $class->new( %$hash_args );
 }
 
 has salt_len => (
@@ -39,34 +48,14 @@ has iterations => (
   default => '1000',
 );
 
-method hLen ($algorithm) {
-  my $shasize = $self->_shasize($algorithm);
-  if ($shasize == 1) {
-    return 20;
-  } else {
-    return $shasize / 8;
-  }
-}
-
 has output_len => (
   is => 'ro',
   isa => 'Int',
   lazy => 1,
   default => method {
-    $self->hLen( $self->algorithm );
+    $self->hasher->hash_len;
   },
 );
-
-method hasher_for_sha ($shasize) {
-  my $hasher = Digest::SHA->can("hmac_sha$shasize");
-  croak "Can't figure out how to hash SHA-$shasize" unless defined $hasher;
-  return $hasher;
-}
-
-method hasher ($algorithm) {
-  my $shasize = $self->_shasize($algorithm);
-  return $self->hasher_for_sha($shasize);
-}
 
 method random_salt {
   my $ret = "";
@@ -76,14 +65,18 @@ method random_salt {
   return $ret;
 }
 
-sub _hexdump {
-  unpack "H*", unpack "A*", shift;
-}
+method encode_string ($salt, $hash, $hasher) {
+  my $hasher_class = Class::MOP::class_of($hasher)->name;
+  if (!defined $hasher_class || $hasher_class !~ s/^Crypt::PBKDF2::Hash:://) {
+    croak "Can't ''encode_string'' with a hasher class outside of Crypt::PBKDF2::Hash::*";
+  }
 
-method encode_string ($salt, $hash) {
-  return '$PBKDF2$' . $self->algorithm . ':' . $self->iterations . ':' 
+  my $algo_string = $hasher->to_algo_string;
+  $algo_string = defined($algo_string) ? "{$algo_string}" : "";
+
+  return '$PBKDF2$' . "$hasher_class$algo_string:" . $self->iterations . ':'
   . MIME::Base64::encode($salt, "") . '$'
-  . MIME::Base64::encode($hash);
+  . MIME::Base64::encode($hash, "");
 }
 
 method decode_string ($hashed) {
@@ -91,7 +84,8 @@ method decode_string ($hashed) {
     croak "Unrecognized hash";
   }
 
-  if (my ($algorithm, $iterations, $salt, $hash) = $hashed =~ /^\$PBKDF2\$([^:]+):(\d+):([^\$]+)\$(.*)/) {
+  if (my ($algorithm, $iterations, $salt, $hash) = $hashed =~ 
+      /^\$PBKDF2\$([^:}]+(?:\{[^}]+\})?):(\d+):([^\$]+)\$(.*)/) {
     return {
       algorithm => $algorithm,
       iterations => $iterations,
@@ -103,24 +97,42 @@ method decode_string ($hashed) {
   }
 }
 
-method generate ($password, :$salt, :$iterations, :$algorithm, :$output_len) {
+method generate ($password, :$salt, :$iterations, :$hasher, :$output_len) {
   $salt = $self->random_salt unless defined $salt;
+  $hasher = $self->hasher unless defined $hasher;
 
   my $hash = $self->PBKDF2($salt, $password, 
+    hasher => $hasher,
     $iterations ? (iterations => $iterations) : (),
-    $algorithm ? (algorithm => $algorithm) : (),
     $output_len ? (output_len => $output_len) : (),
   );
-  return $self->encode_string($salt, $hash);
+  return $self->encode_string($salt, $hash, $hasher);
+}
+
+method hasher_from_algorithm ($algo_str) {
+  if ($algo_str =~ s/\{([^}]+)\}$//) {
+    my $args = $1;
+    Class::MOP::load_class( "Crypt::PBKDF2::Hash::$algo_str" );
+    return "Crypt::PBKDF2::Hash::$algo_str"->from_algo_string($args);
+  } else {
+    Class::MOP::load_class( "Crypt::PBKDF2::Hash::$algo_str" );
+    return "Crypt::PBKDF2::Hash::$algo_str"->new;
+  }
 }
 
 method validate ($hashed, $password) {
   my $info = $self->decode_string($hashed);
 
+  my $hasher = try {
+    $self->hasher_from_algorithm($info->{algorithm});
+  } catch {
+    croak "Couldn't construct hasher for ''$info->{algorithm}'': $_";
+  };
+
   my $check_hash = $self->PBKDF2(
     $info->{salt}, $password, 
     iterations => $info->{iterations},
-    algorithm => $info->{algorithm},
+    hasher => $hasher,
     output_len => length($info->{hash}),
   );
   return ($check_hash eq $info->{hash});
@@ -129,24 +141,22 @@ method validate ($hashed, $password) {
 method PBKDF2_F ($hasher, $salt, $password, $iterations, $i) {
   my $result = 
   my $hash = 
-    $hasher->( $salt . pack("N", $i), $password );
+    $hasher->generate( $salt . pack("N", $i), $password );
 
   for my $iter (2 .. $iterations) {
-    $hash = $hasher->( $hash, $password );
+    $hash = $hasher->generate( $hash, $password );
     $result ^= $hash;
   }
 
   return $result;
 }
 
-method PBKDF2 ($salt, $password, :$iterations, :$algorithm, :$output_len) {
+method PBKDF2 ($salt, $password, :$iterations, :$hasher, :$output_len) {
   $iterations ||= $self->iterations;
-  $algorithm ||= $self->algorithm;
+  $hasher ||= $self->hasher;
   $output_len ||= $self->output_len;
 
-  my $hasher = $self->hasher($algorithm);
-  my $hLen = $self->hLen($algorithm);
-
+  my $hLen = $hasher->hash_len;
   my $l = int($output_len / $hLen);
   my $r = $output_len % $hLen;
 
@@ -178,5 +188,5 @@ sub PBKDF2_hex {
   return unpack "H*", unpack "A*", $self->PBKDF2(@_);
 }
 
-
+__PACKAGE__->meta->make_immutable;
 1;
