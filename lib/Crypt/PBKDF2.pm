@@ -1,6 +1,6 @@
 package Crypt::PBKDF2;
-use Moose;
-use MooseX::Method::Signatures;
+use Moose 1;
+use MooseX::Method::Signatures 0.30;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use MIME::Base64 ();

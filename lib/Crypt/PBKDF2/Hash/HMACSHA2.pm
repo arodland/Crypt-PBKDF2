@@ -1,6 +1,6 @@
 package Crypt::PBKDF2::Hash::HMACSHA2;
 
-use Moose;
+use Moose 1;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use Digest::SHA ();

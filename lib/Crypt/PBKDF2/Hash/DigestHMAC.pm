@@ -1,10 +1,10 @@
 package Crypt::PBKDF2::Hash::DigestHMAC;
 
-use Moose;
+use Moose 1;
 use namespace::autoclean;
-use Digest ();
-use Digest::HMAC ();
-use Try::Tiny;
+use Digest 1.16 ();
+use Digest::HMAC 1.01 ();
+use Try::Tiny 0.04;
 use Carp qw(croak);
 
 with 'Crypt::PBKDF2::Hash';
