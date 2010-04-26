@@ -1,4 +1,5 @@
 package Crypt::PBKDF2::Hash::HMACSHA1;
+# ABSTRACT: HMAC-SHA1 support for Crypt::PBKDF2 using Digest::SHA
 
 use Moose;
 use namespace::autoclean;
@@ -26,3 +27,8 @@ sub from_algo_string {
 
 __PACKAGE__->meta->make_immutable;
 1;
+
+=head1 DESCRIPTION
+
+Uses L<Digest::SHA> C<hmac_sha1> to provide the HMAC-SHA1 backend for
+L<Crypt::PBKDF2>.

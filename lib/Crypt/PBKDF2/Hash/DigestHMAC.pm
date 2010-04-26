@@ -1,5 +1,5 @@
 package Crypt::PBKDF2::Hash::DigestHMAC;
-
+# ABSTRACT: Digest::HMAC hash support for Crypt::PBKDF2.
 use Moose 1;
 use namespace::autoclean;
 use Digest 1.16 ();
@@ -8,6 +8,12 @@ use Try::Tiny 0.04;
 use Carp qw(croak);
 
 with 'Crypt::PBKDF2::Hash';
+
+=attr digest_class
+
+The Digest class to use. Will be passed to C<< Digest->new >>.
+
+=cut
 
 has digest_class => (
   is => 'ro',
@@ -64,3 +70,9 @@ sub from_algo_string {
 
 __PACKAGE__->meta->make_immutable;
 1;
+
+=head1 DESCRIPTION
+
+Uses L<Digest::HMAC> to make nearly any L<Digest>-compatible module
+compatible with L<Crypt::PKBDF2> by driving it with the standard HMAC
+algorithm to combine the key and the data.

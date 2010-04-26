@@ -1,4 +1,5 @@
 package Crypt::PBKDF2::Hash::HMACSHA2;
+# ABSTRACT: HMAC-SHA2 support for Crypt::PBKDF2 using Digest::SHA
 
 use Moose 1;
 use Moose::Util::TypeConstraints;
@@ -56,3 +57,8 @@ sub from_algo_string {
 
 __PACKAGE__->meta->make_immutable;
 1;
+
+=head1 DESCRIPTION
+
+Uses L<Digest::SHA> C<hmac_sha256>/C<hmac_sha384>/C<hmac_sha512> to provide
+the HMAC-SHA2 family of hashes for L<Crypt::PBKDF2>.
