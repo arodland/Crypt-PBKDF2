@@ -1,0 +1,10 @@
+Changes for Crypt::PBKDF2
+
+Version 0.101170: 2010-04-26
+  * Updated SEE ALSO section.
+  * Repository in META.
+  * Added Changes file.
+
+Version 0.101160: 2010-04-26
+  * Initial release to CPAN.
+  * HMACSHA1, HMACSHA2, and DigestHMAC hashers included.
