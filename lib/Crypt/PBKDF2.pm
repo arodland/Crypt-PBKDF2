@@ -378,3 +378,16 @@ nearly unlimited output hash size (up to 2**32 - 1 times the size of the
 output of the backend hash). The hash is salted, as any password hash should
 be, and the salt may also be of arbitrary size.
 
+=head1 SEE ALSO
+
+=over 4
+
+=item *
+
+B<Wikipedia: PBKDF2>: L<http://en.wikipedia.org/wiki/PBKDF2>
+
+=item *
+
+B<RFC2898, PKCS#5 version 2.0>: L<http://tools.ietf.org/html/rfc2898>
+
+=back
