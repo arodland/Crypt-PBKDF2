@@ -10,9 +10,7 @@ use Try::Tiny;
 
 =attr hash_class
 
-B<Type: String>
-
-B<Default: HMACSHA1>
+B<Type:> String, B<Default:> HMACSHA1
 
 The name of the default class that will provide PBKDF2's Pseudo-Random
 Function (the backend hash). If the value starts with a C<+>, the C<+> will
@@ -29,9 +27,7 @@ has hash_class => (
 
 =attr hash_args
 
-B<Type: HashRef>
-
-B<Default:> C<{}>
+B<Type:> HashRef, B<Default:> {}
 
 Arguments to be passed to the C<hash_class> constructor.
 
@@ -45,9 +41,7 @@ has hash_args => (
 
 =attr hasher
 
-B<Type: Object> (must fulfill role L<Crypt::PBKDF2::Hash>)
-
-B<Default:> None.
+B<Type:> Object (must fulfill role L<Crypt::PBKDF2::Hash>), B<Default:> None.
 
 It is also possible to provide a hash object directly; in this case the
 C<hash_class> and C<hash_args> are ignored.
@@ -73,9 +67,7 @@ method _build_hasher {
 
 =attr iterations
 
-B<Type: Integer>
-
-B<Default:> 1000
+B<Type:> Integer, B<Default:> 1000.
 
 The default number of iterations of the hashing function to use for the
 C<generate> and C<PBKDF2> methods.
@@ -90,12 +82,12 @@ has iterations => (
 
 =attr output_len
 
-B<Type: Integer>
+B<Type:> Integer.
 
 The default size (in bytes, not bits) of the output hash. If a value isn't
-provided, the output size depends on the C<hash_class>/C<hasher> selected,
-and will equal the output size of the backend hash (e.g. 20 bytes for
-HMACSHA1).
+provided, the output size depends on the C<hash_class>S< / >C<hasher>
+selected, and will equal the output size of the backend hash (e.g. 20 bytes
+for HMACSHA1).
 
 =cut
 
@@ -106,9 +98,7 @@ has output_len => (
 
 =attr salt_len
 
-B<Type: Integer>
-
-B<Default:> 4
+B<Type:> Integer, B<Default:> 4
 
 The default salt length (in bytes) for the C<generate> method.
 
@@ -132,9 +122,9 @@ method _random_salt {
 
 Generates a hash for the given C<$password>. If C<$salt> is not provided,
 a random salt with length C<salt_len> will be generated. If C<$hasher> is
-not provided, either the C<hasher> or C<hash_class>/C<hash_args> attributes
-will be used. If C<$iterations> or C<$output_len> are not provided, defaults
-will be taken from the corresponding attributes.
+not provided, either the C<hasher> or C<hash_class>S< / >C<hash_args>
+attributes will be used. If C<$iterations> or C<$output_len> are not
+provided, defaults will be taken from the corresponding attributes.
 
 The output looks something like the following (generated with the HMACSHA1
 hash, at the default 1000 iterations and default output length):
@@ -188,9 +178,9 @@ method validate ($hashed, $password) {
 
 The raw PBKDF2 algorithm. Given the C<$salt> and C<$password>, returns the
 raw binary hash. If C<$hasher> is not provided, either the C<hasher> or
-C<hash_class>/C<hash_args> object attributes will be used. If C<$iterations>
-or C<$output_len> are not provided, they will default to their corresponding
-attributes.
+C<hash_class>S< / >C<hash_args> object attributes will be used. If
+C<$iterations> or C<$output_len> are not provided, they will default to
+their corresponding attributes.
 
 =cut
 
@@ -366,6 +356,15 @@ __PACKAGE__->meta->make_immutable;
     if ($pbkdf2->validate($hash, "s3kr1t_password")) {
         access_granted();
     }
+
+    # Most defaults can be overridden for a single method call.
+    # Compute a raw PBKDF2-HMAC-MD5 with 50 iterations.
+    my $raw_hash = $pbkdf2->PBKDF2("salt", "password",
+        iterations => 50,
+        hasher => Crypt::PBKDF2::Hash::DigestHMAC->new(
+            digest_class => "MD5"
+        ),
+    );
 
 =head1 DESCRIPTION
 
