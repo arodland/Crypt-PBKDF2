@@ -14,11 +14,8 @@ my $pbkdf2 = Crypt::PBKDF2->new(hash_class => 'HMACSHA1');
 sub PBKDF2 {
   my ($iterations, $bits, $salt, $password) = @_;
 
-  return $pbkdf2->PBKDF2_hex(
-    $salt, $password,
-    iterations => $iterations,
-    output_len => $bits / 8,
-  );
+  return $pbkdf2->clone(iterations => $iterations, output_len => $bits / 8)->PBKDF2_hex($salt, $password);
+
 }
 
 is PBKDF2(1, 128, "ATHENA.MIT.EDUraeburn", "password"),
