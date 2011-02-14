@@ -1,7 +1,7 @@
 package Crypt::PBKDF2; 
 # ABSTRACT: The PBKDF2 password hashing algorithm.
 use Moose 1;
-use MooseX::Method::Signatures 0.30;
+use Method::Signatures::Simple;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 use MIME::Base64 ();
@@ -135,7 +135,7 @@ only with somewhat more structured information in the second (salt) field.
 
 =cut
 
-method generate ($password, :$salt) {
+method generate ($password, $salt) {
   $salt = $self->_random_salt unless defined $salt;
 
   my $hash = $self->PBKDF2($salt, $password);
