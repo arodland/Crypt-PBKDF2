@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.110460: 2011-02-14
   * Miscellaneous documentation improvements.
   * Optional arguments to "generate" and "validate" have been removed. The
     mandatory arguments remain the same. If you want to override options,
