@@ -135,18 +135,41 @@ method _random_salt {
   return $ret;
 }
 
+=attr encoding
+
+B<Type:> String (either "crypt" or "ldap"), B<Default:> "ldap"
+
+The hash format to generate. The "ldap" format is intended to be compatible
+with RFC2307, and looks like:
+
+    {X-PBKDF2}HMACSHA1:AAAD6A:8ODUPA==:1HSdSVVwlWSZhbPGO7GIZ4iUbrk=
+
+While the "crypt" format is similar to the format used by the C<crypt()>
+function, except with more structured information in the second (salt) field.
+It looks like:
+
+    $PBKDF2$HMACSHA1:1000:4q9OTg==$9Pb6bCRgnct/dga+4v4Lyv8x31s=
+
+Versions of this module up to 0.110461 generated the "crypt" format, so set
+that if you want it. Current versions of this module will read either format,
+but the "ldap" format is preferred.
+
+=cut
+
+has encoding => (
+  is => 'ro',
+  isa => 'Str',
+  default => 'ldap',
+);
+
 =method generate ($password, [$salt])
 
 Generates a hash for the given C<$password>. If C<$salt> is not provided,
 a random salt with length C<salt_len> will be generated.
 
-The output looks something like the following (generated with the HMACSHA1
-hash, at the default 1000 iterations and default output length):
-
-    $PBKDF2$HMACSHA1:1000:akrvug==$Zi+c82tnjpcrRmUAHRd8h4ZRR5M=
-
-The format has been chosen to be broadly similar to that used by C<crypt()>,
-only with somewhat more structured information in the second (salt) field.
+There are two output formats available, depending on the setting of the
+C<encoding> attribute: "ldap" and "crypt"; see the documentation for
+L</encoding> for more information.
 
 =cut
 
@@ -161,7 +184,8 @@ method generate ($password, $salt) {
 
 Validates whether the password C<$password> matches the hash string
 C<$hashed>. May throw an exception if the format of C<$hashed> is invalid;
-otherwise, returns true or false.
+otherwise, returns true or false. Accepts both formats that the "generate"
+method can produce.
 
 =cut
 
@@ -169,9 +193,10 @@ method validate ($hashed, $password) {
   my $info = $self->decode_string($hashed);
 
   my $hasher = try {
-    $self->hasher_from_algorithm($info->{algorithm});
+    $self->hasher_from_algorithm($info->{algorithm}, $info->{algorithm_opts});
   } catch {
-    croak "Couldn't construct hasher for ''$info->{algorithm}'': $_";
+    my $opts = defined($info->{algorithm_options}) ? " (options ''$info->{algorithm_options}'')" : "";
+    croak "Couldn't construct hasher for ''$info->{algorithm}''$opts: $_";
   };
 
   my $checker = $self->clone(
@@ -263,6 +288,16 @@ else.
 =cut
 
 method encode_string ($salt, $hash) {
+  if ($self->encoding eq 'crypt') {
+    return $self->_encode_string_cryptlike($salt, $hash);
+  } elsif ($self->encoding eq 'ldap') {
+    return $self->_encode_string_ldaplike($salt, $hash);
+  } else {
+    die "Unknown setting '", $self->encoding, "' for encoding";
+  }
+}
+
+method _encode_string_cryptlike ($salt, $hash) {
   my $hasher = $self->hasher;
   my $hasher_class = Class::MOP::class_of($hasher)->name;
   if (!defined $hasher_class || $hasher_class !~ s/^Crypt::PBKDF2::Hash:://) {
@@ -274,6 +309,22 @@ method encode_string ($salt, $hash) {
 
   return '$PBKDF2$' . "$hasher_class$algo_string:" . $self->iterations . ':'
   . MIME::Base64::encode($salt, "") . '$'
+  . MIME::Base64::encode($hash, "");
+}
+
+method _encode_string_ldaplike ($salt, $hash) {
+  my $hasher = $self->hasher;
+  my $hasher_class = Class::MOP::class_of($hasher)->name;
+  if (!defined $hasher_class || $hasher_class !~ s/^Crypt::PBKDF2::Hash:://) {
+    croak "Can't ''encode_string'' with a hasher class outside of Crypt::PBKDF2::Hash::*";
+  }
+
+  my $algo_string = $hasher->to_algo_string;
+  $algo_string = defined($algo_string) ? "+$algo_string" : "";
+
+  return '{X-PBKDF2}' . "$hasher_class$algo_string:" 
+  . $self->_b64_encode_int32($self->iterations) . ':'
+  . MIME::Base64::encode($salt, "") . ':'
   . MIME::Base64::encode($hash, "");
 }
 
@@ -310,15 +361,46 @@ exception.
 =cut
 
 method decode_string ($hashed) {
+  if ($hashed =~ /^\$PBKDF2\$/) {
+    return $self->_decode_string_cryptlike($hashed);
+  } elsif ($hashed =~ /^\{X-PBKDF2}/i) {
+    return $self->_decode_string_ldaplike($hashed);
+  } else {
+    croak "Unrecognized hash";
+  }
+}
+
+method _decode_string_cryptlike ($hashed) {
   if ($hashed !~ /^\$PBKDF2\$/) {
     croak "Unrecognized hash";
   }
 
-  if (my ($algorithm, $iterations, $salt, $hash) = $hashed =~ 
-      /^\$PBKDF2\$([^:}]+(?:\{[^}]+\})?):(\d+):([^\$]+)\$(.*)/) {
+  if (my ($algorithm, $opts, $iterations, $salt, $hash) = $hashed =~
+      /^\$PBKDF2\$([^:}]+)(\{[^}]+\})?:(\d+):([^\$]+)\$(.*)/) {
     return {
       algorithm => $algorithm,
+      algorithm_options => $opts,
       iterations => $iterations,
+      salt => MIME::Base64::decode($salt),
+      hash => MIME::Base64::decode($hash),
+    }
+  } else {
+    croak "Invalid format";
+  }
+}
+
+method _decode_string_ldaplike ($hashed) {
+  if ($hashed !~ /^\{X-PBKDF2}/i) {
+    croak "Unrecognized hash";
+  }
+
+  if (my ($algo_str, $iterations, $salt, $hash) = $hashed =~
+      /^\{X-PBKDF2}([^:]+):([^:]{6}):([^\$]+):(.*)/i) {
+    my ($algorithm, $opts) = split /\+/, $algo_str;
+    return {
+      algorithm => $algorithm,
+      algorithm_options => $opts,
+      iterations => $self->_b64_decode_int32($iterations),
       salt => MIME::Base64::decode($salt),
       hash => MIME::Base64::decode($hash),
     }
@@ -334,14 +416,13 @@ an algorithm string as produced by C<encode_string> / C<generate>.
 
 =cut
 
-method hasher_from_algorithm ($algo_str) {
-  if ($algo_str =~ s/\{([^}]+)\}$//) {
-    my $args = $1;
-    Class::MOP::load_class( "Crypt::PBKDF2::Hash::$algo_str" );
-    return "Crypt::PBKDF2::Hash::$algo_str"->from_algo_string($args);
+method hasher_from_algorithm ($algorithm, $args) {
+  if (defined $args) {
+    Class::MOP::load_class( "Crypt::PBKDF2::Hash::$algorithm" );
+    return "Crypt::PBKDF2::Hash::$algorithm"->from_algo_string($args);
   } else {
-    Class::MOP::load_class( "Crypt::PBKDF2::Hash::$algo_str" );
-    return "Crypt::PBKDF2::Hash::$algo_str"->new;
+    Class::MOP::load_class( "Crypt::PBKDF2::Hash::$algorithm" );
+    return "Crypt::PBKDF2::Hash::$algorithm"->new;
   }
 }
 
@@ -371,6 +452,17 @@ method clone (%params) {
   );
   
   return $class->new(%new_args);
+}
+
+method _b64_encode_int32 ($value) {
+  my $b64 = MIME::Base64::encode(pack("N", $value), "");
+  $b64 =~ s/==$//;
+  return $b64;
+}
+
+method _b64_decode_int32 ($b64) {
+  $b64 .= "==";
+  return unpack "N", MIME::Base64::decode($b64);
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -416,5 +508,10 @@ B<Wikipedia: PBKDF2>: L<http://en.wikipedia.org/wiki/PBKDF2>
 =item *
 
 B<RFC2898, PKCS#5 version 2.0>: L<http://tools.ietf.org/html/rfc2898>
+
+=item *
+
+B<RFC2307, Using LDAP as a Network Information Service>: 
+L<http://tools.ietf.org/html/rfc2307>
 
 =back
