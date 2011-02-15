@@ -1,5 +1,13 @@
 Changes for Crypt::PBKDF2
 
+{{$NEXT}}
+  * Miscellaneous documentation improvements.
+  * Optional arguments to "generate" and "validate" have been removed. The
+    mandatory arguments remain the same. If you want to override options,
+    clone the object instead.
+  * MooseX::MethodSignatures replaced with Method::Signatures::Simple, which
+    should improve speed noticeably.
+
 Version 0.101170: 2010-04-26
   * Updated SEE ALSO section.
   * Repository in META.
