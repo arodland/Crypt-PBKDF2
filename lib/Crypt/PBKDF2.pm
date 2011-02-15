@@ -8,8 +8,6 @@ use MIME::Base64 ();
 use Carp qw(croak);
 use Try::Tiny;
 
-with 'MooseX::Clone';
-
 =attr hash_class
 
 B<Type:> String, B<Default:> HMACSHA1
@@ -25,6 +23,7 @@ has hash_class => (
   is => 'ro',
   isa => 'Str',
   default => 'HMACSHA1',
+  predicate => 'has_hash_class',
 );
 
 =attr hash_args
@@ -39,6 +38,7 @@ has hash_args => (
   is => 'ro',
   isa => 'HashRef',
   default => sub { +{} },
+  predicate => 'has_hash_args',
 );
 
 =attr hasher
@@ -53,7 +53,16 @@ C<hash_class> and C<hash_args> are ignored.
 has hasher => (
   is => 'ro',
   isa => role_type('Crypt::PBKDF2::Hash'),
-  lazy_build => 1,
+  default => sub { shift->_lazy_hasher },
+);
+
+has _lazy_hasher => (
+  is => 'ro',
+  isa => role_type('Crypt::PBKDF2::Hash'),
+  lazy => 1,
+  init_arg => undef,
+  predicate => 'has_lazy_hasher',
+  builder => '_build_hasher',
 );
 
 method _build_hasher {
@@ -96,6 +105,7 @@ for HMACSHA1).
 has output_len => (
   is => 'ro',
   isa => 'Int',
+  predicate => 'has_output_len',
 );
 
 =attr salt_len
@@ -335,6 +345,28 @@ method hasher_from_algorithm ($algo_str) {
 Create a new object like this one, but with C<%params> changed.
 
 =cut
+
+method clone (%params) {
+  my $class = ref $self;
+
+  # If the hasher was built from hash_class and hash_args, then omit it from
+  # the clone. But if it was set by the user, then we need to copy it. We're
+  # assuming that the hasher has no state, so it doesn't need a deep clone.
+  # This is true of all of the ones that I'm shipping, but if it's not true for
+  # you, let me know.
+
+  my %new_args = (
+    $self->has_hash_class  ? (hash_class  => $self->hash_class) : (),
+    $self->has_hash_args   ? (hash_args   => $self->hash_args)  : (),
+    $self->has_output_len  ? (output_len  => $self->output_len) : (),
+    $self->has_lazy_hasher ? () : (hasher => $self->hasher),
+    iterations => $self->iterations,
+    salt_len => $self->salt_len,
+    %params,
+  );
+  
+  return $class->new(%new_args);
+}
 
 __PACKAGE__->meta->make_immutable;
 1;
