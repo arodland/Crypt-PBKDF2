@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.110461: 2011-02-15
   * Fix bug related to instantiation of "hasher".
 
 Version 0.110460: 2011-02-14
