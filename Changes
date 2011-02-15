@@ -1,6 +1,10 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+  * SEMI-INCOMPATIBLE CHANGE: Add a new, LDAP-like, output format for
+    'generate'. This format is now the default output format. If you want
+    to generate the same output as version 0.110461, or that can be read by
+    previous versions, see the documentation for the "encoding" attribute.
 
 Version 0.110461: 2011-02-15
   * Fix bug related to instantiation of "hasher".
