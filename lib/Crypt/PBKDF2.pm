@@ -8,6 +8,10 @@ use MIME::Base64 ();
 use Carp qw(croak);
 use Try::Tiny;
 
+method BUILD {
+  $self->hasher; # Force instantiation, so we get errors ASAP
+}
+
 =attr hash_class
 
 B<Type:> String, B<Default:> HMACSHA1
@@ -53,6 +57,7 @@ C<hash_class> and C<hash_args> are ignored.
 has hasher => (
   is => 'ro',
   isa => role_type('Crypt::PBKDF2::Hash'),
+  lazy => 1,
   default => sub { shift->_lazy_hasher },
 );
 
