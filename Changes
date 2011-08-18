@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.112020: 2011-07-21
   * SEMI-INCOMPATIBLE CHANGE: Add a new, LDAP-like, output format for
     'generate'. This format is now the default output format. If you want
     to generate the same output as version 0.110461, or that can be read by
