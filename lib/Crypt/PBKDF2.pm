@@ -475,10 +475,10 @@ __PACKAGE__->meta->make_immutable;
     use Crypt::PBKDF2;
 
     my $pbkdf2 = Crypt::PBKDF2->new(
-        hash_class => 'HMACSHA1' # this is the default
-        iterations => 1000,      # so is this
-        output_len => 20,        # and this
-        salt_len => 4,           # and this.
+        hash_class => 'HMACSHA1', # this is the default
+        iterations => 1000,       # so is this
+        output_len => 20,         # and this
+        salt_len => 4,            # and this.
     );
 
     my $hash = $pbkdf2->generate("s3kr1t_password");
