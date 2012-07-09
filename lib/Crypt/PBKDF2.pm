@@ -193,7 +193,7 @@ method validate ($hashed, $password) {
   my $info = $self->decode_string($hashed);
 
   my $hasher = try {
-    $self->hasher_from_algorithm($info->{algorithm}, $info->{algorithm_opts});
+    $self->hasher_from_algorithm($info->{algorithm}, $info->{algorithm_options});
   } catch {
     my $opts = defined($info->{algorithm_options}) ? " (options ''$info->{algorithm_options}'')" : "";
     croak "Couldn't construct hasher for ''$info->{algorithm}''$opts: $_";
