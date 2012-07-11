@@ -1,6 +1,7 @@
 package Crypt::PBKDF2::Hash::HMACSHA2;
 # ABSTRACT: HMAC-SHA2 support for Crypt::PBKDF2 using Digest::SHA
-
+# VERSION
+# AUTHORITY
 use Moose 1;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;

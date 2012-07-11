@@ -1,5 +1,7 @@
 package Crypt::PBKDF2::Hash::DigestHMAC;
 # ABSTRACT: Digest::HMAC hash support for Crypt::PBKDF2.
+# VERSION
+# AUTHORITY
 use Moose 1;
 use namespace::autoclean;
 use Digest 1.16 ();

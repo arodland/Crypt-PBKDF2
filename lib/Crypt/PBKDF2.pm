@@ -1,5 +1,7 @@
 package Crypt::PBKDF2; 
 # ABSTRACT: The PBKDF2 password hashing algorithm.
+# VERSION
+# AUTHORITY
 use Moose 1;
 use Method::Signatures::Simple;
 use Moose::Util::TypeConstraints;
