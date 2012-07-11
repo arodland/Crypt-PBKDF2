@@ -1,7 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
-  * Updated dist.ini.
+  * Correct a typo that breaks deserialization of hashes with algorithm
+    options.
 
 Version 0.112020: 2011-07-21
   * SEMI-INCOMPATIBLE CHANGE: Add a new, LDAP-like, output format for
