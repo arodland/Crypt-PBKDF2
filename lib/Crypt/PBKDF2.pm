@@ -378,7 +378,7 @@ method _decode_string_cryptlike ($hashed) {
   }
 
   if (my ($algorithm, $opts, $iterations, $salt, $hash) = $hashed =~
-      /^\$PBKDF2\$([^:}]+)(\{[^}]+\})?:(\d+):([^\$]+)\$(.*)/) {
+      /^\$PBKDF2\$([^:}]+)(?:\{([^}]+)\})?:(\d+):([^\$]+)\$(.*)/) {
     return {
       algorithm => $algorithm,
       algorithm_options => $opts,
