@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.131750: 2013-06-24
   * Fix decoding 'crypt'-style hashes with options (CPAN RT#84130)
 
 Version 0.121930: 2012-07-10
