@@ -1,17 +1,15 @@
-package Crypt::PBKDF2::Hash;
+use Moops;
 # ABSTRACT: Abstract role for PBKDF2 hashing algorithms.
+# PODNAME: Crypt::PBKDF2::Hash
 # VERSION
 # AUTHORITY
-use Moose::Role;
-use namespace::autoclean;
 
-requires 'hash_len';
-
-requires 'generate';
-
-requires 'to_algo_string';
-
-requires 'from_algo_string';
+role Crypt::PBKDF2::Hash {
+  requires 'hash_len';
+  requires 'generate';
+  requires 'to_algo_string';
+  requires 'from_algo_string';
+}
 
 1;
 
@@ -38,3 +36,5 @@ hash.
 Given a string as produced by C<from_algo_string>, return an instance of
 this class with options corresponding to those in C<$str>. If no options are
 expected, it's permissible for this method to throw an exception.
+
+=cut

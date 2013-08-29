@@ -1,32 +1,32 @@
-package Crypt::PBKDF2::Hash::HMACSHA1;
+use Moops;
 # ABSTRACT: HMAC-SHA1 support for Crypt::PBKDF2 using Digest::SHA
+# PODNAME: Crypt::PBKDF2::Hash::HMACSHA1
 # VERSION
 # AUTHORITY
-use Moose;
-use namespace::autoclean;
-use Digest::SHA ();
-use Carp qw(croak);
 
-with 'Crypt::PBKDF2::Hash';
+class Crypt::PBKDF2::Hash::HMACSHA1 with Crypt::PBKDF2::Hash {
 
-sub hash_len {
-  return 20;
+  use Digest::SHA ();
+  use Carp qw(croak);
+
+  sub hash_len {
+    return 20;
+  }
+
+  sub generate {
+    my $self = shift; # ($data, $key)
+    return Digest::SHA::hmac_sha1(@_);
+  }
+
+  sub to_algo_string {
+    return;
+  }
+
+  sub from_algo_string {
+    croak "No argument expected";
+  }
 }
 
-sub generate {
-  my $self = shift; # ($data, $key)
-  return Digest::SHA::hmac_sha1(@_);
-}
-
-sub to_algo_string {
-  return;
-}
-
-sub from_algo_string {
-  croak "No argument expected";
-}
-
-__PACKAGE__->meta->make_immutable;
 1;
 
 =head1 DESCRIPTION
