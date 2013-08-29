@@ -269,7 +269,7 @@ sub PBKDF2_hex {
 method _PBKDF2_F ($hasher, $salt, $password, $iterations, $i) {
   my $result = 
   my $hash = 
-  $hasher->generate( $salt . pack("N", $i), $password );
+    $hasher->generate( $salt . pack("N", $i), $password );
 
   for my $iter (2 .. $iterations) {
     $hash = $hasher->generate( $hash, $password );
@@ -376,7 +376,7 @@ method _decode_string_cryptlike ($hashed) {
   }
 
   if (my ($algorithm, $opts, $iterations, $salt, $hash) = $hashed =~
-    /^\$PBKDF2\$([^:}]+)(\{[^}]+\})?:(\d+):([^\$]+)\$(.*)/) {
+      /^\$PBKDF2\$([^:}]+)(\{[^}]+\})?:(\d+):([^\$]+)\$(.*)/) {
     return {
       algorithm => $algorithm,
       algorithm_options => $opts,
@@ -395,7 +395,7 @@ method _decode_string_ldaplike ($hashed) {
   }
 
   if (my ($algo_str, $iterations, $salt, $hash) = $hashed =~
-    /^\{X-PBKDF2}([^:]+):([^:]{6}):([^\$]+):(.*)/i) {
+      /^\{X-PBKDF2}([^:]+):([^:]{6}):([^\$]+):(.*)/i) {
     my ($algorithm, $opts) = split /\+/, $algo_str;
     return {
       algorithm => $algorithm,

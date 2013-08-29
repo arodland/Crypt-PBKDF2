@@ -51,7 +51,7 @@ sub hash_len {
 
 sub generate {
   my ($self, $data, $key) = @_;
-
+  
   my $digest = $self->_digest->clone;
 
   return Digest::HMAC::hmac($data, $key,
