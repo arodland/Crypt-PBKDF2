@@ -17,49 +17,49 @@ class Crypt::PBKDF2::Hash::HMACSHA2
   with Crypt::PBKDF2::Hash 
   types Crypt::PBKDF2::Hash::HMACSHA2::Types {
 
-  use Digest::SHA ();
-  use Type::Utils qw(declare as where message);
+use Digest::SHA ();
+use Type::Utils qw(declare as where message);
 
-  has 'sha_size' => (
-    is => 'ro',
-    isa => SHASize,
-    default => 256,
-  );
+has 'sha_size' => (
+  is => 'ro',
+  isa => SHASize,
+  default => 256,
+);
 
-  has '_hasher' => (
-    is => 'ro',
-    lazy_build => 1,
-    init_arg => undef,
-  );
+has '_hasher' => (
+  is => 'ro',
+  lazy_build => 1,
+  init_arg => undef,
+);
 
-  sub _build__hasher {
-    my $self = shift;
-    my $shasize = $self->sha_size;
+sub _build__hasher {
+  my $self = shift;
+  my $shasize = $self->sha_size;
 
-    return Digest::SHA->can("hmac_sha$shasize");
-  }
+  return Digest::SHA->can("hmac_sha$shasize");
+}
 
-  sub hash_len {
-    my $self = shift;
-    return $self->sha_size() / 8;
-  }
+sub hash_len {
+  my $self = shift;
+  return $self->sha_size() / 8;
+}
 
-  sub generate {
-    my $self = shift; # ($data, $key)
-    return $self->_hasher->(@_);
-  }
+sub generate {
+  my $self = shift; # ($data, $key)
+  return $self->_hasher->(@_);
+}
 
-  sub to_algo_string {
-    my $self = shift;
+sub to_algo_string {
+  my $self = shift;
 
-    return $self->sha_size;
-  }
+  return $self->sha_size;
+}
 
-  sub from_algo_string {
-    my ($class, $str) = @_;
+sub from_algo_string {
+  my ($class, $str) = @_;
 
-    return $class->new( sha_size => $str );
-  }
+  return $class->new( sha_size => $str );
+}
 }
 
 =head1 DESCRIPTION

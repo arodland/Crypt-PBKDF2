@@ -6,25 +6,25 @@ use Moops;
 
 class Crypt::PBKDF2::Hash::HMACSHA1 with Crypt::PBKDF2::Hash {
 
-  use Digest::SHA ();
-  use Carp qw(croak);
+use Digest::SHA ();
+use Carp qw(croak);
 
-  sub hash_len {
-    return 20;
-  }
+sub hash_len {
+  return 20;
+}
 
-  sub generate {
-    my $self = shift; # ($data, $key)
-    return Digest::SHA::hmac_sha1(@_);
-  }
+sub generate {
+  my $self = shift; # ($data, $key)
+  return Digest::SHA::hmac_sha1(@_);
+}
 
-  sub to_algo_string {
-    return;
-  }
+sub to_algo_string {
+  return;
+}
 
-  sub from_algo_string {
-    croak "No argument expected";
-  }
+sub from_algo_string {
+  croak "No argument expected";
+}
 }
 
 1;

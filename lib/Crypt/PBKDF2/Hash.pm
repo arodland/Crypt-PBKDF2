@@ -5,10 +5,10 @@ use Moops;
 # AUTHORITY
 
 role Crypt::PBKDF2::Hash {
-  requires 'hash_len';
-  requires 'generate';
-  requires 'to_algo_string';
-  requires 'from_algo_string';
+requires 'hash_len';
+requires 'generate';
+requires 'to_algo_string';
+requires 'from_algo_string';
 }
 
 1;

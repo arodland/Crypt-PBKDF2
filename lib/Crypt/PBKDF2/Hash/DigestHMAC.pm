@@ -6,10 +6,10 @@ use Moops;
 
 class Crypt::PBKDF2::Hash::DigestHMAC with Crypt::PBKDF2::Hash {
 
-  use Digest 1.16 ();
-  use Digest::HMAC 1.01 ();
-  use Try::Tiny 0.04;
-  use Carp qw(croak);
+use Digest 1.16 ();
+use Digest::HMAC 1.01 ();
+use Try::Tiny 0.04;
+use Carp qw(croak);
 
 =attr digest_class
 
@@ -17,58 +17,58 @@ The Digest class to use. Will be passed to C<< Digest->new >>.
 
 =cut
 
-  has digest_class => (
-    is => 'ro',
-    required => 1,
-  );
+has digest_class => (
+  is => 'ro',
+  required => 1,
+);
 
-  has _digest => (
-    is => 'ro',
-    lazy_build => 1,
-    init_arg => undef,
-  );
+has _digest => (
+  is => 'ro',
+  lazy_build => 1,
+  init_arg => undef,
+);
 
-  sub _build__digest {
-    my $self = shift;
+sub _build__digest {
+  my $self = shift;
 
-    return Digest->new($self->digest_class);
+  return Digest->new($self->digest_class);
+}
+
+sub BUILD {
+  my $self = shift;
+
+  try {
+    my $digest = $self->_digest;
+  } catch {
+    croak "Couldn't construct a Digest of type " . $self->digest_class . ": $_";
   }
+}
 
-  sub BUILD {
-    my $self = shift;
+sub hash_len {
+  my $self = shift;
+  return length( $self->_digest->clone->add("")->digest );
+}
 
-    try {
-      my $digest = $self->_digest;
-    } catch {
-      croak "Couldn't construct a Digest of type " . $self->digest_class . ": $_";
-    }
-  }
+sub generate {
+  my ($self, $data, $key) = @_;
 
-  sub hash_len {
-    my $self = shift;
-    return length( $self->_digest->clone->add("")->digest );
-  }
+  my $digest = $self->_digest->clone;
 
-  sub generate {
-    my ($self, $data, $key) = @_;
+  return Digest::HMAC::hmac($data, $key,
+    sub { $digest->add(@_)->digest });
+}
 
-    my $digest = $self->_digest->clone;
+sub to_algo_string {
+  my $self = shift;
 
-    return Digest::HMAC::hmac($data, $key,
-      sub { $digest->add(@_)->digest });
-  }
+  return $self->digest_class;
+}
 
-  sub to_algo_string {
-    my $self = shift;
+sub from_algo_string {
+  my ($class, $str) = shift;
 
-    return $self->digest_class;
-  }
-
-  sub from_algo_string {
-    my ($class, $str) = shift;
-
-    return $class->new(digest_class => $str);
-  }
+  return $class->new(digest_class => $str);
+}
 }
 
 =head1 DESCRIPTION
