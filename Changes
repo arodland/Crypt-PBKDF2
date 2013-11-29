@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.133330: 2013-11-29
   * Replace Class::MOP::load_class with Module::Runtime for compatibility
     with latest Moose
 
