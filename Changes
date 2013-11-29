@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+  * Replace Class::MOP::load_class with Module::Runtime for compatibility
+    with latest Moose
 
 Version 0.131750: 2013-06-24
   * Fix decoding 'crypt'-style hashes with options (CPAN RT#84130)
