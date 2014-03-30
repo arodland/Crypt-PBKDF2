@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.140890: 2014-03-30
   * Remove use of Method::Signatures::Simple. Devel::Declare was causing
     problems for some users, and it's really not needed for such a simple
     module.
