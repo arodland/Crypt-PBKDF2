@@ -166,6 +166,27 @@ has encoding => (
   default => 'ldap',
 );
 
+=attr length_limit
+
+B<Type:> Integer
+
+The maximum password length to allow, for generate and verify functions.
+Allowing passwords of unlimited length can allow a denial-of-service attack
+in which an attacker asks the server to validate very large passwords.
+
+For compatibility this attribute is unset by default, but it is recommended
+to set it to a reasonably small value like 100 -- large enough that users
+aren't discouraged from having secure passwords, but small enough to limit
+the computation needed to validate any one password.
+
+=cut
+
+has length_limit => (
+  is => 'ro',
+  isa => 'Int',
+  predicate => 'has_length_limit',
+);
+
 =method generate ($password, [$salt])
 
 Generates a hash for the given C<$password>. If C<$salt> is not provided,
@@ -180,6 +201,10 @@ L</encoding> for more information.
 sub generate {
   my ($self, $password, $salt) = @_;
   $salt = $self->_random_salt unless defined $salt;
+
+  if ($self->has_length_limit and length($password) > $self->length_limit) {
+    croak "Password exceeds length limit";
+  }
 
   my $hash = $self->PBKDF2($salt, $password);
   return $self->encode_string($salt, $hash);
@@ -196,6 +221,11 @@ method can produce.
 
 sub validate {
   my ($self, $hashed, $password) = @_;
+
+  if ($self->has_length_limit and length($password) > $self->length_limit) {
+    croak "Password exceeds length limit";
+  }
+
   my $info = $self->decode_string($hashed);
 
   my $hasher = try {
