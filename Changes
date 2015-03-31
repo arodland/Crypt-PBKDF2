@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.150900: 2015-03-31
   * Fix RT#102447 (PBKDF2_hex removes certain bytes from the end of hash).
 
 Version 0.142390: 2014-08-27
