@@ -300,7 +300,7 @@ As the C<PBKDF2> method, only the output is encoded in hexadecimal.
 
 sub PBKDF2_hex {
   my $self = shift;
-  return unpack "H*", unpack "a*", $self->PBKDF2(@_);
+  return unpack "H*", $self->PBKDF2(@_);
 }
 
 sub _PBKDF2_F {
