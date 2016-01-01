@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.160010: 2015-12-31
   * Use Moo instead of Moose. This reduces our dependencies significantly,
     and also speeds up startup by a little bit. Runtime performance should
     be unaffected.
