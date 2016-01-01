@@ -2,13 +2,16 @@ package Crypt::PBKDF2;
 # ABSTRACT: The PBKDF2 password hashing algorithm.
 # VERSION
 # AUTHORITY
-use Moose 1;
-use Moose::Util::TypeConstraints;
+use Moo 2;
+use strictures 2;
 use namespace::autoclean;
 use MIME::Base64 ();
 use Carp qw(croak);
 use Module::Runtime;
 use Try::Tiny;
+use Type::Tiny;
+use Types::Standard qw(Str Int HashRef ConsumerOf);
+use Scalar::Util qw(blessed);
 
 sub BUILD {
   my ($self) = @_;
@@ -28,7 +31,7 @@ name. Otherwise, the value will be appended to C<Crypt::PBKDF2::Hash::>.
 
 has hash_class => (
   is => 'ro',
-  isa => 'Str',
+  isa => Str,
   default => 'HMACSHA1',
   predicate => 'has_hash_class',
 );
@@ -43,7 +46,7 @@ Arguments to be passed to the C<hash_class> constructor.
 
 has hash_args => (
   is => 'ro',
-  isa => 'HashRef',
+  isa => HashRef,
   default => sub { +{} },
   predicate => 'has_hash_args',
 );
@@ -59,14 +62,14 @@ C<hash_class> and C<hash_args> are ignored.
 
 has hasher => (
   is => 'ro',
-  isa => role_type('Crypt::PBKDF2::Hash'),
+  isa => ConsumerOf['Crypt::PBKDF2::Hash'],
   lazy => 1,
   default => sub { shift->_lazy_hasher },
 );
 
 has _lazy_hasher => (
   is => 'ro',
-  isa => role_type('Crypt::PBKDF2::Hash'),
+  isa => ConsumerOf['Crypt::PBKDF2::Hash'],
   lazy => 1,
   init_arg => undef,
   predicate => 'has_lazy_hasher',
@@ -95,8 +98,8 @@ C<generate> and C<PBKDF2> methods.
 
 has iterations => (
   is => 'ro',
-  isa => 'Int',
-  default => '1000',
+  isa => Int,
+  default => 1000,
 );
 
 =attr output_len
@@ -112,7 +115,7 @@ for HMACSHA1).
 
 has output_len => (
   is => 'ro',
-  isa => 'Int',
+  isa => Int,
   predicate => 'has_output_len',
 );
 
@@ -126,7 +129,7 @@ The default salt length (in bytes) for the C<generate> method.
 
 has salt_len => (
   is => 'ro',
-  isa => 'Int',
+  isa => Int,
   default => 4,
 );
 
@@ -162,7 +165,7 @@ but the "ldap" format is preferred.
 
 has encoding => (
   is => 'ro',
-  isa => 'Str',
+  isa => Str,
   default => 'ldap',
 );
 
@@ -183,7 +186,7 @@ the computation needed to validate any one password.
 
 has length_limit => (
   is => 'ro',
-  isa => 'Int',
+  isa => Int,
   predicate => 'has_length_limit',
 );
 
@@ -339,7 +342,7 @@ sub encode_string {
 sub _encode_string_cryptlike {
   my ($self, $salt, $hash) = @_;
   my $hasher = $self->hasher;
-  my $hasher_class = Class::MOP::class_of($hasher)->name;
+  my $hasher_class = blessed($hasher);
   if (!defined $hasher_class || $hasher_class !~ s/^Crypt::PBKDF2::Hash:://) {
     croak "Can't ''encode_string'' with a hasher class outside of Crypt::PBKDF2::Hash::*";
   }
@@ -355,7 +358,7 @@ sub _encode_string_cryptlike {
 sub _encode_string_ldaplike {
   my ($self, $salt, $hash) = @_;
   my $hasher = $self->hasher;
-  my $hasher_class = Class::MOP::class_of($hasher)->name;
+  my $hasher_class = blessed($hasher);
   if (!defined $hasher_class || $hasher_class !~ s/^Crypt::PBKDF2::Hash:://) {
     croak "Can't ''encode_string'' with a hasher class outside of Crypt::PBKDF2::Hash::*";
   }

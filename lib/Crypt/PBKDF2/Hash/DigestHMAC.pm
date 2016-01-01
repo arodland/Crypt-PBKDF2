@@ -2,7 +2,8 @@ package Crypt::PBKDF2::Hash::DigestHMAC;
 # ABSTRACT: Digest::HMAC hash support for Crypt::PBKDF2.
 # VERSION
 # AUTHORITY
-use Moose 1;
+use Moo 2;
+use strictures 2;
 use namespace::autoclean;
 use Digest 1.16 ();
 use Digest::HMAC 1.01 ();
@@ -23,8 +24,7 @@ has digest_class => (
 );
 
 has _digest => (
-  is => 'ro',
-  lazy_build => 1,
+  is => 'lazy',
   init_arg => undef,
 );
 
@@ -70,7 +70,6 @@ sub from_algo_string {
   return $class->new(digest_class => $str);
 }
 
-__PACKAGE__->meta->make_immutable;
 1;
 
 =head1 DESCRIPTION

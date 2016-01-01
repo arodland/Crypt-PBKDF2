@@ -2,7 +2,8 @@ package Crypt::PBKDF2::Hash::HMACSHA1;
 # ABSTRACT: HMAC-SHA1 support for Crypt::PBKDF2 using Digest::SHA
 # VERSION
 # AUTHORITY
-use Moose;
+use Moo 2;
+use strictures 2;
 use namespace::autoclean;
 use Digest::SHA ();
 use Carp qw(croak);
@@ -26,7 +27,6 @@ sub from_algo_string {
   croak "No argument expected";
 }
 
-__PACKAGE__->meta->make_immutable;
 1;
 
 =head1 DESCRIPTION
