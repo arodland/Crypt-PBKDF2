@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.160410: 2016-02-10
   * Release 0.160010-TRIAL as stable.
 
 Version 0.160010-TRIAL: 2015-12-31
