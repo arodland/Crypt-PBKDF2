@@ -2,7 +2,8 @@ package Crypt::PBKDF2::Hash;
 # ABSTRACT: Abstract role for PBKDF2 hashing algorithms.
 # VERSION
 # AUTHORITY
-use Moose::Role;
+use Moo::Role 2;
+use strictures 2;
 use namespace::autoclean;
 
 requires 'hash_len';

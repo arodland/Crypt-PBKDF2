@@ -2,29 +2,28 @@ package Crypt::PBKDF2::Hash::HMACSHA3;
 # ABSTRACT: HMAC-SHA3 support for Crypt::PBKDF2 using Digest::SHA
 # VERSION
 # AUTHORITY
-use Moose 1;
-use Moose::Util::TypeConstraints;
+use Moo 2;
+use strictures 2;
 use namespace::autoclean;
 use Digest::HMAC 1.01 ();
 use Digest::SHA3 0.22 ();
+use Type::Tiny;
+use Types::Standard qw(Enum);
 
 with 'Crypt::PBKDF2::Hash';
 
-subtype 'SHASize' => (
-  as 'Int',
-  where { $_ == 224 or $_ == 256 or $_ == 384 or $_ == 512 },
-  message { "$_ is an invalid number of bits for SHA-3" }
-);
-
 has 'sha_size' => (
   is => 'ro',
-  isa => 'SHASize',
+  isa => Type::Tiny->new(
+    name => 'SHASize',
+    parent => Enum[qw( 224 256 384 512 )],
+    display_name => 'valid number of bits for SHA-2',
+  ),
   default => 256,
 );
 
 has '_hasher' => (
-  is => 'ro',
-  lazy_build => 1,
+  is => 'lazy',
   init_arg => undef,
 );
 
@@ -57,7 +56,6 @@ sub from_algo_string {
   return $class->new( sha_size => $str );
 }
 
-__PACKAGE__->meta->make_immutable;
 1;
 
 =head1 DESCRIPTION

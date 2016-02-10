@@ -1,6 +1,12 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+  * Release 0.160010-TRIAL as stable.
+
+Version 0.160010-TRIAL: 2015-12-31
+  * Use Moo instead of Moose. This reduces our dependencies significantly,
+    and also speeds up startup by a little bit. Runtime performance should
+    be unaffected.
 
 Version 0.150900: 2015-03-31
   * Fix RT#102447 (PBKDF2_hex removes certain bytes from the end of hash).
