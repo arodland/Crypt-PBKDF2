@@ -1,6 +1,9 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+  * Require an up-to-date Types::Standard to prevent errors about ConsumerOf
+    and Enum not being found on installation. There is no need to upgrade if
+    Crypt::PBKDF2 is already working for you.
 
 Version 0.160410: 2016-02-10
   * Release 0.160010-TRIAL as stable.
