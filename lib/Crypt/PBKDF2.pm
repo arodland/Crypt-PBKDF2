@@ -10,7 +10,7 @@ use Carp qw(croak);
 use Module::Runtime;
 use Try::Tiny;
 use Type::Tiny;
-use Types::Standard qw(Str Int HashRef ConsumerOf);
+use Types::Standard 1.000005 qw(Str Int HashRef ConsumerOf);
 use Scalar::Util qw(blessed);
 
 sub BUILD {
