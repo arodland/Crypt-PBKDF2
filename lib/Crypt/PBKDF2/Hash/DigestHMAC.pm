@@ -75,5 +75,5 @@ sub from_algo_string {
 =head1 DESCRIPTION
 
 Uses L<Digest::HMAC> to make nearly any L<Digest>-compatible module
-compatible with L<Crypt::PKBDF2> by driving it with the standard HMAC
+compatible with L<Crypt::PBKDF2> by driving it with the standard HMAC
 algorithm to combine the key and the data.
