@@ -222,6 +222,27 @@ method can produce.
 
 =cut
 
+# no-shortcut version of eq
+sub _is_equal {
+  my ($x, $y) = @_;
+
+  my $length_check = length($x) == length($y);
+
+  my $result = 0;
+  my @x = split //, $x;
+  my @y = split //, $y;
+  for my $char_x (@x) {
+    my $char_y = shift @y;
+    {
+      no warnings "uninitialized";
+      $result |= ord($char_x) ^ ord($char_y);
+    }
+  }
+  my $eq_check = $result == 0;
+
+  return $length_check & $eq_check;
+}
+
 sub validate {
   my ($self, $hashed, $password) = @_;
 
@@ -246,7 +267,9 @@ sub validate {
 
   my $check_hash = $checker->PBKDF2($info->{salt}, $password);
 
-  return ($check_hash eq $info->{hash});
+  # help mitigate timing attacks by taking no shortcuts when comparing
+  # two hashes (eq will stop when they are no longer equal)
+  return _is_equal($check_hash, $info->{hash});
 }
 
 =method PBKDF2 ($salt, $password)
