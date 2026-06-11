@@ -6,6 +6,7 @@ use Moo 2;
 use strictures 2;
 use namespace::autoclean;
 use MIME::Base64 ();
+use Crypt::URandom ();
 use Carp qw(croak);
 use Module::Runtime;
 use Try::Tiny;
@@ -138,11 +139,7 @@ has salt_len => (
 
 sub _random_salt {
   my ($self) = @_;
-  my $ret = "";
-  for my $n (1 .. $self->salt_len) {
-    $ret .= chr(int rand 256);
-  }
-  return $ret;
+  return Crypt::URandom::urandom($self->salt_len);
 }
 
 =attr encoding
