@@ -20,19 +20,22 @@ sub BUILD {
 
 =attr hash_class
 
-B<Type:> String, B<Default:> HMACSHA1
+B<Type:> String, B<Default:> HMACSHA2
 
 The name of the default class that will provide PBKDF2's Pseudo-Random
 Function (the backend hash). If the value starts with a C<+>, the C<+> will
 be removed and the remainder will be taken as a fully-qualified package
 name. Otherwise, the value will be appended to C<Crypt::PBKDF2::Hash::>.
 
+The default class is C<HMACSHA2>, which (with its own default C<sha_size> of
+256) provides HMAC-SHA256.
+
 =cut
 
 has hash_class => (
   is => 'ro',
   isa => Str,
-  default => 'HMACSHA1',
+  default => 'HMACSHA2',
   predicate => 'has_hash_class',
 );
 
@@ -89,7 +92,7 @@ sub _build_hasher {
 
 =attr iterations
 
-B<Type:> Integer, B<Default:> 1000.
+B<Type:> Integer, B<Default:> 600000.
 
 The default number of iterations of the hashing function to use for the
 C<generate> and C<PBKDF2> methods.
@@ -99,7 +102,7 @@ C<generate> and C<PBKDF2> methods.
 has iterations => (
   is => 'ro',
   isa => Int,
-  default => 1000,
+  default => 600000,
 );
 
 =attr output_len
@@ -526,9 +529,9 @@ __PACKAGE__->meta->make_immutable;
     use Crypt::PBKDF2;
 
     my $pbkdf2 = Crypt::PBKDF2->new(
-        hash_class => 'HMACSHA1', # this is the default
-        iterations => 1000,       # so is this
-        output_len => 20,         # and this
+        hash_class => 'HMACSHA2', # this is the default (HMAC-SHA256)
+        iterations => 600000,     # so is this
+        output_len => 32,         # and this
         salt_len => 4,            # and this.
     );
 
