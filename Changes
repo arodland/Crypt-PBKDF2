@@ -7,6 +7,8 @@ Changes for Crypt::PBKDF2
   * Generate salts using Crypt::URandom (a strong system RNG) instead of
     perl's builtin `rand()`, which is not cryptographically secure
     (CVE-2026-9638).
+  * Use a constant-time comparison in `validate` to avoid timing attacks
+    (CVE-2017-20240).
 
 Version 0.161520: 2016-05-31
   * Require an up-to-date Types::Standard to prevent errors about ConsumerOf

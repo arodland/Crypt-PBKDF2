@@ -246,7 +246,19 @@ sub validate {
 
   my $check_hash = $checker->PBKDF2($info->{salt}, $password);
 
-  return ($check_hash eq $info->{hash});
+  return _secure_compare($check_hash, $info->{hash});
+}
+
+# Constant-time string comparison, to avoid timing attacks on the hash check.
+sub _secure_compare {
+  my ($a, $b) = @_;
+
+  my $r = length($a) != length($b);
+  $a = $b if $r;
+
+  $r |= ord(substr($a, $_)) ^ ord(substr($b, $_)) for 0 .. length($a) - 1;
+
+  return $r == 0;
 }
 
 =method PBKDF2 ($salt, $password)
