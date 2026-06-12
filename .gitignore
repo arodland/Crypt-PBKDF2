@@ -1,3 +1,6 @@
 .build
 Crypt-PBKDF2-*
 local
+Build.PL
+README.pod
+META.json
