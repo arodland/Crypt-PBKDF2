@@ -1,6 +1,8 @@
 Changes for Crypt::PBKDF2
 
 {{$NEXT}}
+
+Version 0.261630: 2026-06-11
   * Change the default hash algorithm to HMAC-SHA256, and increase the
     default number of iterations to 600,000, in line with current OWASP
     recommendations (CVE-2026-9641).
